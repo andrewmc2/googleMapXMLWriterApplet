@@ -1,0 +1,23 @@
+#map-canvas{
+	clear: both;
+}
+
+#wrapper{
+	width: 100%;
+}
+
+#address{
+	width: 40%;
+	height: 200px;
+	position: relative;
+	display: inline-block;
+	float: left;
+}
+
+#target{
+	width: 40%;
+	height: 200px;
+	position: relative;
+	float: left;
+	display: inline-block;
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+<title>Google Maps Latitude Longitude XML Writer</title>
+
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="util.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="xmlwriter.js"></script>
+
+<link rel='stylesheet' href='style.css' type='text/css' media='screen'>
+
+<script type="text/javascript">
+	var iValue={};
+	iValue.something=100;
+	var writer = new XmlWriter();
+	var map;
+	var parksAmount;
+	var counter=0;
+
+	function initialize() {
+   
+	var myLatlng = new google.maps.LatLng(
+	43.482626, -79.653392);
+	var myOptions = {
+	zoom: 7,
+	center: myLatlng,
+	mapTypeId: google.maps.MapTypeId.ROADMAP
+	}
+    
+    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    
+    var marker = new google.maps.Marker({
+      position: myLatlng,
+      map: map,
+      animation:google.maps.Animation.BOUNCE,
+      title:"You are Here !"
+  });
+    
+	setInterval(function(){myTimer()},3000);
+
+	}//initialize end
+
+    function myTimer2(){
+    }
+
+    function myTimer(){
+      
+    downloadUrl("locations-20110725.xml", function(data) {
+    var parksAmount = data.documentElement.getElementsByTagName("Location").length;
+    
+    var markers = data.documentElement.getElementsByTagName("LocationName");    
+    var mygc = new google.maps.Geocoder();
+    
+    for (i=iValue.something; i < iValue.something+1 ; i++) { 
+    
+	var locationID = data.documentElement.getElementsByTagName("LocationID")[i].childNodes[0].nodeValue;
+	
+	var locationName = data.documentElement.getElementsByTagName("LocationName")[i].childNodes[0].nodeValue;
+	
+	var markers = data.documentElement.getElementsByTagName("Address")[i].childNodes[0].nodeValue + ", Toronto, ON";
+    
+		mygc.geocode({'address' : markers}, function(results, status){
+   
+		if(status=="OK"){
+    	
+			var latlat = results[0].geometry.location.lat();
+			var longlong =  results[0].geometry.location.lng();  
+			var target = document.getElementById('target'); 
+			target.innerHTML = target.innerHTML + "lat:" + latlat + "long:" + longlong + "<br>"; 
+			writer.writeElement( 'location');
+			writer.writeElement( 'LocationID');
+			writer.writeContent(locationID);
+			writer.writeElementClose( 'LocationID');
+			writer.writeElement( 'LocationName');
+			writer.writeContent(locationName);
+			writer.writeElementClose( 'LocationName');
+			writer.writeElement( 'locationAddress');
+			writer.writeContent(markers);
+			writer.writeElementClose( 'locationAddress');
+			writer.writeElement( 'locationLat');
+			writer.writeContent( latlat );
+			writer.writeElementClose( 'locationLat' );
+			writer.writeElement( 'locationLong');
+			writer.writeContent( longlong );
+			writer.writeElementClose( 'locationLong' );
+			writer.writeElementClose( 'location' );	    
+			var latlng = new google.maps.LatLng(latlat,longlong);
+			var marker = new google.maps.Marker({position: latlng, map: map});
+			} else {}         
+
+			});//download url end
+
+			var address = document.getElementById('address');
+			address.innerHTML = address.innerHTML + markers + "<br>";
+
+			}//for loop end
+
+			iValue.something=iValue.something+1;
+			
+			counter++;
+			console.log(counter);
+			newParksAmount = parksAmount - counter
+			console.log(newParksAmount);
+			
+			
+			document.getElementById('parksLeft').innerHTML = "Locations left: " + newParksAmount;
+			});//results status end
+			
+			if(counter==10){
+			console.log("for end");
+			console.log( writer.xml );
+			}
+			
+			}//mytimer end   
+</script>
+</head>
+<body onload="initialize()">
+			<div id="map_canvas" style="width:400px; height:300px"></div>
+			
+			<div id="parksLeft"></div>
+			<div id="wrapper"></div>
+			<div id="address"></div>
+			<div id="target"></div>
+			
+  
+</body>
+</html>
